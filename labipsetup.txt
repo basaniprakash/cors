@@ -1,0 +1,139 @@
+# On Linux, use the ip command to set the unique IPs to the available card so that unique IP/DNS/DOMAIN can be achieved without complex setups of webservers, dockers, ...
+
+The certificates are generated based on the following name binding
+ip addr add 192.168.122.67/24 dev virbr0
+ip addr add 192.168.122.187/24 dev virbr0
+ip addr add 192.168.122.164/24 dev virbr0
+
+
+/etc/resolve.conf
+nameserver 192.168.1.1
+nameserver 127.0.0.1
+
+/etc/sysconfig/network/config
+NETCONFIG_DNS_STATIC_SERVERS="127.0.0.1 192.168.1.1 2401:4900:50:9::66 2401:4900:50:9::280"
+
+/etc/dnsmasq.conf
+address=/corsauth.com/192.168.122.67
+address=/www.corsauth.com/192.168.122.67
+address=/corsmain.com/192.168.122.164
+address=/www.corsmain.com/192.168.122.164
+address=/corsmainapp.com/192.168.122.164
+address=/www.corsmainapp.com/192.168.122.164
+address=/corsui.com/192.168.122.187
+address=/www.corsui.com/192.168.122.187
+address=/ui.server.ip/192.168.122.187
+address=/auth.server.ip/192.168.122.67
+address=/mainapp.server.ip/192.168.122.164
+
+systemctl status dnsmasq.service
+
+
+CA certificates
+
+Setup the CA(root)
+openssl genpkey -algorithm RSA -out ca.key
+openssl req -x509 -new -nodes -key ca.key -sha256 -days 3650 -out ca.crt
+openssl x509 -in ca.crt -text -noout
+
+Create SAN config file as per the server name/ip binding (UI app)
+san_ui.cnf
+[ req ]
+default_bits = 2048
+prompt = no
+default_md = sha256
+req_extensions = req_ext
+distinguished_name = dn
+
+[ dn ]
+C=IN
+ST=Karnataka
+L=Bangalore
+O=opentext
+OU=portfolio
+emailAddress=bbasani@opentext.com
+CN = corsui.com
+
+[ req_ext ]
+subjectAltName = @alt_names
+
+[ alt_names ]
+DNS.1   = corsui.com
+DNS.2   = www.corsui.com
+IP.1    = 192.168.122.187
+
+[ v3_ext ]
+subjectAltName = @alt_names
+
+openssl genpkey -algorithm RSA -out ui.key
+openssl req -new -key ui.key -out ui.csr -config san.cnf
+openssl x509 -req -in ui.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out ui.crt -days 365 -sha256 -extfile san.cnf -extensions v3_ext
+openssl x509 -in ui.crt -text -noout
+
+Create SAN config file as per the server name/ip binding (AUTH app)
+san_auth.cnf
+[ req ]
+default_bits = 2048
+prompt = no
+default_md = sha256
+req_extensions = req_ext
+distinguished_name = dn
+
+[ dn ]
+C=IN
+ST=Karnataka
+L=Bangalore
+O=opentext
+OU=portfolio
+emailAddress=bbasani@opentext.com
+CN = corsui.com
+
+[ req_ext ]
+subjectAltName = @alt_names
+
+[ alt_names ]
+DNS.1   = corsauth.com
+DNS.2   = www.corsauth.com
+IP.1    = 192.168.122.67
+
+[ v3_ext ]
+subjectAltName = @alt_names
+
+openssl genpkey -algorithm RSA -out auth.key
+openssl req -new -key auth.key -out auth.csr -config san_auth.cnf
+openssl x509 -req -in auth.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out auth.crt -days 365 -sha256 -extfile san_auth.cnf -extensions v3_ext
+openssl x509 -in auth.crt -text -noout
+
+Create SAN config file as per the server name/ip binding (MAINAPP app)
+[ req ]
+default_bits = 2048
+prompt = no
+default_md = sha256
+req_extensions = req_ext
+distinguished_name = dn
+
+[ dn ]
+C=IN
+ST=Karnataka
+L=Bangalore
+O=opentext
+OU=portfolio
+emailAddress=bbasani@opentext.com
+CN = corsmainapp.com
+
+[ req_ext ]
+subjectAltName = @alt_names
+
+[ alt_names ]
+DNS.1   = corsmainapp.com
+DNS.2   = www.corsmainapp.com
+IP.1    = 192.168.122.164
+
+[ v3_ext ]
+subjectAltName = @alt_names
+
+openssl genpkey -algorithm RSA -out mainapp.key
+openssl req -new -key mainapp.key -out mainapp.csr -config san_mainapp.cnf
+openssl x509 -req -in mainapp.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out mainapp.crt -days 365 -sha256 -extfile san_mainapp.cnf -extensions v3_ext
+openssl x509 -in mainapp.crt -text -noout
+
