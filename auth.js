@@ -7,9 +7,9 @@ const https = require('https');
 const fs = require('fs');
 
 // SSL config
-const privateKey = fs.readFileSync('/home/bs/certs/auth.key', 'utf8');
-const certificate = fs.readFileSync('/home/bs/certs/auth.crt', 'utf8');
-const ca = fs.readFileSync('/home/bs/certs/ca.crt', 'utf8');
+const privateKey = fs.readFileSync('certs/auth.key', 'utf8');
+const certificate = fs.readFileSync('certs/auth.crt', 'utf8');
+const ca = fs.readFileSync('certs/ca.crt', 'utf8');
 
 const credentials = {
     key: privateKey,
