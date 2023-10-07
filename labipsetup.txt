@@ -137,3 +137,14 @@ openssl req -new -key mainapp.key -out mainapp.csr -config san_mainapp.cnf
 openssl x509 -req -in mainapp.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out mainapp.crt -days 365 -sha256 -extfile san_mainapp.cnf -extensions v3_ext
 openssl x509 -in mainapp.crt -text -noout
 
+
+IMPORTANT:
+ca.crt must be imported to the Browser/OS trust store
+cp ca.crt corsca.crt
+mv corsca.crt /etc/pki/trust/anchors
+update-ca-certificates
+
+Import the ca cert to browser(Edge, firefox tested with) to settings/privacy.. look for the certificates, import.
+
+Deploy the apps with the respective IP/DNS/CRT
+Browser stips off the Origin header after the Auth server redirects, so the mainapp need to add null as allowed origin.
