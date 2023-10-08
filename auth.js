@@ -34,9 +34,16 @@ app.use(csurf());
 
 app.get('/start-auth', (req, res) => {
     console.log('/start-auth');
+	const token = 'some_generated_token';
+	const csrfToken = req.csrfToken();
+
     // This is a simulated logic to start the authentication process.
     let redirectUrl = `https://www.corsmainapp.com/complete-auth?token=someToken&csrf=${req.csrfToken()}`;
-    res.redirect(redirectUrl);
+    res.json({
+			redirectURL: `https://www.corsmainapp.com/complete-auth?token=${token}&_csrf=${csrfToken}`,
+			csrfToken: csrfToken
+	});
+    //res.redirect(redirectUrl);
 });
 
 // Starting the server with HTTPS

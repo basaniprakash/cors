@@ -2,24 +2,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>UI</title>
+    <title>CORS UI application</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
-    <button onclick="initiateAuth()">Start Auth</button>
-    <script>
-        function initiateAuth() {
-            // Simulated AJAX call to AUTH server
-            fetch('https://www.corsauth.com/start-auth', {
-                method: 'GET',
-                credentials: 'include' // Needed to include cookies
-            })
-            .then(response => response.json())
-            .then(data => {
-                // Redirecting to the provided URL for authentication
-                window.location.href = data.redirectUrl;
-            });
-        }
-    </script>
+	<button id="authButton">Athenticate</button>
+    <script src="ui.js"></script>
 </body>
 </html>
 

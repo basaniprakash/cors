@@ -16,23 +16,42 @@ const credentials = {
     ca: ca
 };
 
-const allowedOrigins = ['https://www.corsui.com', 'https://www.corsauth.com', 'https://www.corsmainapp.com'];
+// Allow the null as the auth redirect causes browser stip the Origin, ie. set to null
+const allowedOrigins = ['https://www.corsui.com', 'https://www.corsauth.com', 'https://www.corsmainapp.com', 'null', 'undefined'];
 
 const corsOptions = {
     origin: function (origin, callback) {
-        if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+		if ( orgin === 'null' ) {
+			console.log('origin is null');
+		}
+		if ( origin === 'undefined') {
+			console.log('origin is undefined');
+		}
+
+		if ( orgin === null ) {
+			console.log('origin is null');
+		}
+		if ( origin === undefined) {
+			console.log('origin is undefined');
+		}
+        if (allowedOrigins.indexOf(origin) !== -1) {
+			console.log('allowed origin');
             callback(null, true);
         } else {
 			console.log('incorrect origin, but allowing', origin);
             callback(null, true);
-            //callback(new Error('Not allowed by CORS'));
+            callback(new Error('Not allowed by CORS'));
         }
     },
-    credentials: true
+	//origin: null,
+    credentials: true,
+	methods: "GET,POST,PUT,DELETE,OPTIONS",
+	allowedHeaders: "Origin,X-Requested-With,Content-Type,Accept,Authorization",
 }
 
 app.use(cors(corsOptions));
 
+// Just a debug stuff
 app.use((err, req, res, next) => {
     console.error('Error message:', err.message);
     console.error('Origin:', req.headers.origin);
@@ -43,16 +62,16 @@ app.use((err, req, res, next) => {
 });
 
 
-app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Origin,X-Requested-With,Content-Type,Accept,Authorization');
-    next();
-});
+//app.use((req, res, next) => {
+ //   res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+  //  res.header('Access-Control-Allow-Headers', 'Origin,X-Requested-With,Content-Type,Accept,Authorization');
+   // next();
+//});
 
 
 app.use(function (req, res, next) {
-res.setHeader('Access-Control-Allow-Origin', null);
-res.setHeader('Access-Control-Allow-Credentials', true);
+//res.setHeader('Access-Control-Allow-Origin', null);
+//res.setHeader('Access-Control-Allow-Credentials', true);
 next();
 });
 app.get('/complete-auth', (req, res) => {
@@ -65,7 +84,7 @@ app.get('/complete-auth', (req, res) => {
 	console.log(`req: ${req} \nres: ${res}`);
 	//res.send('<h2>Authentication successful! Welcome to MainApp.</h2>'); 	
 	console.log('completed the auth');
- 	res.json({ redirectUrl: 'https://www.corsmainapp.com/home' });
+ 	res.redirect('https://www.corsmainapp.com/home');
 });
 
 app.get('/favicon.ico', (req, res) => res.send('favicon.ico'));
